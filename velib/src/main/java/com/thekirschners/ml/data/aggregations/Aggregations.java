@@ -39,6 +39,7 @@ public class Aggregations {
             for (Station station : contractStations) {
                 String city = contract.getCities()[0];
                 WeatherData weatherData = weather.get(city);
+/*
                 StationInfo stationInfo = new StationInfo(
                         calendar.get(Calendar.MINUTE), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.DAY_OF_WEEK), calendar.get(Calendar.DAY_OF_MONTH), new Date().getTime(), contract.getName(),
                         station.getName(),
@@ -51,6 +52,7 @@ public class Aggregations {
                         weatherData.wind().speed()
                 );
                 ret.add(stationInfo);
+*/
             }
         }
 
