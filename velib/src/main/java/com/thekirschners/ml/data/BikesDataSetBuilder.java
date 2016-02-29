@@ -1,6 +1,6 @@
 package com.thekirschners.ml.data;
 
-import com.thekirschners.ml.data.aggregations.StationInfo;
+import com.thekirschners.ml.data.aggregations.DynamicStationData;
 import com.thekirschners.ml.data.raw.bikes.jcdecaux.Contract;
 import com.thekirschners.ml.data.raw.bikes.jcdecaux.Station;
 import com.thekirschners.ml.data.raw.weather.WeatherData;
@@ -87,41 +87,57 @@ public class BikesDataSetBuilder {
             final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             final int year = calendar.get(Calendar.YEAR);
 
+            saveContractOfDay(contracts, year, month, dayOfMonth);
+
             for (Contract contract : contracts) {
                 final String where = (contract.getName() + "," + contract.getCountry()).toLowerCase().replace("valence","valencia").replace("bruxelles-capitale", "bruxelles");
-                final WeatherData metric = Services.weather().now(WEATHER_API_KEY, where, "metric");
+                final WeatherData weatherData = Services.weather().now(WEATHER_API_KEY, where, "metric");
                 final List<Station> stations = Services.jcdBikeService().stations(VELIB_API_KEY, contract.getName());
-                PrintWriter out = null;
-                try {
-                    final String fileName = "bikes-" + contract.getName() + "-" + year + "_" + month + "_" + dayOfMonth + ".csv";
-                    final File outputFile = new File(new File(outputDir), fileName);
-                    out = new PrintWriter(new FileOutputStream(outputFile, true), true);
-                    for (Station station : stations) {
-                        StationInfo stationInfo = new StationInfo(
-                                minute,
-                                hour,
-                                dayOfWeek,
-                                dayOfMonth,
-                                month,
-                                contract.getName(),
-                                station.getName(),
-                                station.getStatus(),
-                                station.getBikeStands(),
-                                station.getAvailableStands(),
-                                station.getAvailableBikes(),
-                                metric.condition()[0].main(),
-                                metric.metrics().temperature(),
-                                metric.wind().speed()
-                        );
-                        stationInfo.toCSV(out);
-                    }
-                    out.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (out != null)
-                        out.close();
+                saveStationStaticData(contracts, stations, year, month, dayOfMonth);
+                saveWeatherForContract(contracts, weatherData, year, month, dayOfMonth, hour, minute);
+                saveStationsDynamicData(outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
+            }
+        }
+
+        private void saveWeatherForContract(List<Contract> contracts, WeatherData weatherData, int year, int month, int dayOfMonth, int hour, int minute) {
+
+        }
+
+        private void saveContractOfDay(List<Contract> contracts, int year, int month, int dayOfMonth) {
+
+        }
+
+        private void saveStationStaticData(List<Contract> contracts, List<Station> stations, int year, int month, int dayOfMonth) {
+
+        }
+
+        private void saveStationsDynamicData(String outputDir, int month, int dayOfMonth, int minute, int hour, int dayOfWeek, int year, Contract contract, WeatherData metric, List<Station> stations) {
+            PrintWriter out = null;
+            try {
+                final String fileName = "bikes-" + contract.getName() + "-" + year + "_" + month + "_" + dayOfMonth + ".csv";
+                final File outputFile = new File(new File(outputDir), fileName);
+                out = new PrintWriter(new FileOutputStream(outputFile, true), true);
+                for (Station station : stations) {
+                    DynamicStationData dynamicStationData = new DynamicStationData(
+                            minute,
+                            hour,
+                            dayOfWeek,
+                            dayOfMonth,
+                            month,
+                            station.getNumber(),
+                            station.getStatus(),
+                            station.getBikeStands(),
+                            station.getAvailableStands(),
+                            station.getAvailableBikes()
+                    );
+                    dynamicStationData.toCSV(out);
                 }
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                if (out != null)
+                    out.close();
             }
         }
     }

@@ -16,8 +16,8 @@ public class Aggregations {
     public static final String JCD_BIKES_API_KEY = "77571707f075ff31ce2dc32fa6da4e9a407c9a0e";
     public static final String OWM_API_KEY = "b77c1ed4bdf983030de5fdbbd444b8f6";
 
-    public static List<StationInfo> jcdBikesData() {
-        ArrayList<StationInfo> ret = new ArrayList<>();
+    public static List<DynamicStationData> jcdBikesData() {
+        ArrayList<DynamicStationData> ret = new ArrayList<>();
 
         HashMap<String, WeatherData> weather = new HashMap<>();
         HashMap<String, List<Station>> stations = new HashMap<>();
