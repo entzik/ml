@@ -3,6 +3,7 @@ package com.thekirschners.ml.data.raw.bikes.jcdecaux;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,5 +48,13 @@ public class Contract {
 
     public List<CountryCity> cities() {
         return Arrays.asList(cities).stream().map(c -> new CountryCity(c, country)).collect(Collectors.toList());
+    }
+
+    public static void writeCSVHeaders(PrintWriter out) {
+        out.println("name,brand,country");
+    }
+
+    public void toCSV(PrintWriter out) {
+        out.println(name + "," + brand + "," + country);
     }
 }

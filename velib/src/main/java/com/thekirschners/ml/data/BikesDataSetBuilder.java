@@ -87,28 +87,72 @@ public class BikesDataSetBuilder {
             final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
             final int year = calendar.get(Calendar.YEAR);
 
-            saveContractOfDay(contracts, year, month, dayOfMonth);
+            saveContractOfDay(outputDir, contracts, year, month, dayOfMonth);
 
             for (Contract contract : contracts) {
                 final String where = (contract.getName() + "," + contract.getCountry()).toLowerCase().replace("valence","valencia").replace("bruxelles-capitale", "bruxelles");
                 final WeatherData weatherData = Services.weather().now(WEATHER_API_KEY, where, "metric");
                 final List<Station> stations = Services.jcdBikeService().stations(VELIB_API_KEY, contract.getName());
-                saveStationStaticData(contracts, stations, year, month, dayOfMonth);
-                saveWeatherForContract(contracts, weatherData, year, month, dayOfMonth, hour, minute);
+                saveStationStaticData(outputDir, contract, stations, year, month, dayOfMonth);
+                saveWeatherForContract(outputDir, contract, weatherData, year, month, dayOfMonth, hour, minute);
                 saveStationsDynamicData(outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
             }
         }
 
-        private void saveWeatherForContract(List<Contract> contracts, WeatherData weatherData, int year, int month, int dayOfMonth, int hour, int minute) {
-
+        private void saveWeatherForContract(String outputDir, Contract contract, WeatherData weatherData, int year, int month, int dayOfMonth, int hour, int minute) {
+            final String fileName = "weather-" + contract + "-" + year + "_" + month + "_" + dayOfMonth + ".csv";
+            final File outputFile = new File(new File(outputDir), fileName);
+            boolean writeHeaders = !outputFile.exists();
+            PrintWriter out = null;
+            try {
+                out = new PrintWriter(new FileOutputStream(outputFile, true), true);
+                if (writeHeaders)
+                    WeatherData.writeCSVHeaders(out);
+                weatherData.toCSV(year, month, dayOfMonth, hour, minute, out);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                if (out != null)
+                    out.close();
+            }
         }
 
-        private void saveContractOfDay(List<Contract> contracts, int year, int month, int dayOfMonth) {
-
+        private void saveContractOfDay(String outputDir, List<Contract> contracts, int year, int month, int dayOfMonth) {
+            final String fileName = "bike-contracts-" + year + "_" + month + "_" + dayOfMonth + ".csv";
+            final File outputFile = new File(new File(outputDir), fileName);
+            if (!outputFile.exists()) {
+                PrintWriter out = null;
+                try {
+                    out = new PrintWriter(new FileOutputStream(outputFile, true), true);
+                    Contract.writeCSVHeaders(out);
+                    for (Contract contract : contracts)
+                        contract.toCSV(out);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (out != null)
+                        out.close();
+                }
+            }
         }
 
-        private void saveStationStaticData(List<Contract> contracts, List<Station> stations, int year, int month, int dayOfMonth) {
-
+        private void saveStationStaticData(String outputDir, Contract contract, List<Station> stations, int year, int month, int dayOfMonth) {
+            final String fileName = "stations-" + contract + "-" + year + "_" + month + "_" + dayOfMonth + ".csv";
+            final File outputFile = new File(new File(outputDir), fileName);
+            if (!outputFile.exists()) {
+                PrintWriter out = null;
+                try {
+                    out = new PrintWriter(new FileOutputStream(outputFile, true), true);
+                    Station.writeCSVHeaders(out);
+                    for (Station station : stations)
+                        station.toCSV(out);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (out != null)
+                        out.close();
+                }
+            }
         }
 
         private void saveStationsDynamicData(String outputDir, int month, int dayOfMonth, int minute, int hour, int dayOfWeek, int year, Contract contract, WeatherData metric, List<Station> stations) {
@@ -116,7 +160,10 @@ public class BikesDataSetBuilder {
             try {
                 final String fileName = "bikes-" + contract.getName() + "-" + year + "_" + month + "_" + dayOfMonth + ".csv";
                 final File outputFile = new File(new File(outputDir), fileName);
+                boolean writeHeaders = !outputFile.exists();
                 out = new PrintWriter(new FileOutputStream(outputFile, true), true);
+                if (writeHeaders)
+                    DynamicStationData.writeCSVHeaders(out);
                 for (Station station : stations) {
                     DynamicStationData dynamicStationData = new DynamicStationData(
                             minute,
@@ -132,7 +179,6 @@ public class BikesDataSetBuilder {
                     );
                     dynamicStationData.toCSV(out);
                 }
-                out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } finally {

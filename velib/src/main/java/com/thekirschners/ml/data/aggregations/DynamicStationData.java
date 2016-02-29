@@ -50,4 +50,8 @@ public class DynamicStationData {
     public void toCSV(PrintWriter out) {
         out.println(month + "," + dayOfMonth + "," + dayOfWeek + "," + hour + "," + minute + "," + number + "," + status + "," + operationalStands + "," + availableStands + "," + availableBikes);
     }
+
+    public static void writeCSVHeaders(PrintWriter out) {
+        out.println("month,dayOfMonth,dayOfWeek,hour,minute,number,status,operationalStands,availableStands,availableBikes");
+    }
 }

@@ -5,6 +5,8 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.io.PrintWriter;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WeatherData {
     final WeatherCoordinates coordinates;
@@ -59,5 +61,13 @@ public class WeatherData {
     @JsonProperty("dt")
     public long measurementTime() {
         return measurementTime;
+    }
+
+    public static void writeCSVHeaders(PrintWriter out) {
+
+    }
+
+    public void toCSV(int year, int month, int dayOfMonth, int hour, int minute, PrintWriter out) {
+
     }
 }

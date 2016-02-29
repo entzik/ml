@@ -3,6 +3,8 @@ package com.thekirschners.ml.data.raw.bikes.jcdecaux;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.io.PrintWriter;
+
 public class Station {
     private final int number;
     private final String contract;
@@ -103,5 +105,13 @@ public class Station {
     @JsonProperty("last_update")
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public static void writeCSVHeaders(PrintWriter out) {
+        out.println("number,contract,name,address,lat,long,banking,bonus");
+    }
+
+    public void toCSV(PrintWriter out) {
+        out.println(number + "," + contract + "," + name + "," + address + "," + position.latitude() + "," + position.longitude() + "," + banking + "," + bonus);
     }
 }

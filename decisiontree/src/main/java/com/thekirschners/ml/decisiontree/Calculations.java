@@ -31,7 +31,7 @@ public class Calculations {
     public static double entropy(Collection<Tuple> tuples, int classAttr) {
         final double tupleCount = (double) tuples.size();
         Map<String, Double> classProbabilities = tuples.parallelStream()
-                .map(t -> new Pair(t.classAttribute(classAttr), 1 / tupleCount))
+                .map(t -> new Pair(t.attribute(classAttr), 1 / tupleCount))
                 .collect(Collectors.toMap(Pair::name, Pair::value, (p1, p2) -> p1 + p2));
         return classProbabilities.entrySet().stream().
                 map(Map.Entry::getValue).map(p -> p * Math.log(p))
