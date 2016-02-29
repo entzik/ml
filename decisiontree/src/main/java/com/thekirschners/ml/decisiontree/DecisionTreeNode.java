@@ -24,6 +24,6 @@ public class DecisionTreeNode {
         if (classAttribute != null)
             return classAttribute;
         else
-            return children.get(t.getAttributes()[attributeNdx]).predict(t);
+            return children.get(t.attribute(attributeNdx)).predict(t);
     }
 }
