@@ -7,6 +7,7 @@ repositories {
 
 
 dependencies {
+    compile group: 'org.elasticsearch', name: 'elasticsearch', version: '2.2.0'
     compile group: 'org.jboss.resteasy', name: 'resteasy-client', version: '3.0.16.Final'
     compile group: 'org.jboss.resteasy', name: 'resteasy-jackson-provider', version: '3.0.16.Final'
     compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.2.2'
