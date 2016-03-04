@@ -1,11 +1,13 @@
 package com.thekirschners.ml.data.raw.weather;
 
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Created by emilkirschner on 24/02/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WindConditions {
     final double speed;
     final double orientation;

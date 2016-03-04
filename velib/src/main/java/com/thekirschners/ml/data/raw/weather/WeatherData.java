@@ -64,10 +64,10 @@ public class WeatherData {
     }
 
     public static void writeCSVHeaders(PrintWriter out) {
-
+        out.println("year,month,day,hour,minute,weather,temp,wind");
     }
 
     public void toCSV(int year, int month, int dayOfMonth, int hour, int minute, PrintWriter out) {
-
+        out.println(year + "," + month + "," + dayOfMonth + "," + hour + "," + minute + "," + condition()[0].main()+ "," + metrics.temperature() + "," + wind.speed);
     }
 }

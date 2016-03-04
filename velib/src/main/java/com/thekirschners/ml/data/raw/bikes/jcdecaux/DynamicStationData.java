@@ -1,4 +1,4 @@
-package com.thekirschners.ml.data.aggregations;
+package com.thekirschners.ml.data.raw.bikes.jcdecaux;
 
 import java.io.PrintWriter;
 
