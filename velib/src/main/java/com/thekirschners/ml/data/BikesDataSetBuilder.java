@@ -21,14 +21,34 @@ import java.util.Calendar;
 public class BikesDataSetBuilder {
     public static final String EVERY_5_MINUTES = "0 0/5 * * * ?";
 
-    public static final String VELIB_API_KEY = "77571707f075ff31ce2dc32fa6da4e9a407c9a0e";
-    public static final String WEATHER_API_KEY = "b77c1ed4bdf983030de5fdbbd444b8f6";
+    public static final String JOB_PARAM_OUTPUT_DIR = "outputDir";
+    public static final String JOB_PARAM_JCD_BIKES_API_KEY = "jcdBikesApiKey";
+    public static final String JOB_PARAM_WEATHER_API_KEY = "weatherApiKey";
+
 
     public static void main(String[] args) {
-        Option dataDirOption   = Option.builder().argName("outputDir")
-                .longOpt("outputDir")
+        Option dataDirOption   = Option.builder().argName(JOB_PARAM_OUTPUT_DIR)
+                .longOpt(JOB_PARAM_OUTPUT_DIR)
                 .hasArg()
-                .desc(  "use given file for log" )
+                .desc(  "dataset output directory" )
+                .hasArg(true)
+                .numberOfArgs(1)
+                .required(true)
+                .build();
+
+        Option jcdBikesApiKeyOption   = Option.builder().argName(JOB_PARAM_JCD_BIKES_API_KEY)
+                .longOpt(JOB_PARAM_JCD_BIKES_API_KEY)
+                .hasArg()
+                .desc(  "a valid jcdecaux API key obtained from https://developer.jcdecaux.com/#/signup" )
+                .hasArg(true)
+                .numberOfArgs(1)
+                .required(true)
+                .build();
+
+        Option weatherApiKeyOption   = Option.builder().argName(JOB_PARAM_WEATHER_API_KEY)
+                .longOpt(JOB_PARAM_WEATHER_API_KEY)
+                .hasArg()
+                .desc(  "a valid open weather map key obtained from http://openweathermap.org/appid" )
                 .hasArg(true)
                 .numberOfArgs(1)
                 .required(true)
@@ -36,12 +56,16 @@ public class BikesDataSetBuilder {
 
         Options options = new Options();
         options.addOption(dataDirOption);
+        options.addOption(jcdBikesApiKeyOption);
+        options.addOption(weatherApiKeyOption);
 
         try {
             CommandLine parse = new DefaultParser().parse(options, args);
-            String outputDir = parse.getOptionValue("outputDir");
-//            startJob(outputDir);
-            new BikeAndWeatherDataJob().saveData(outputDir);
+            String outputDir = parse.getOptionValue(JOB_PARAM_OUTPUT_DIR);
+            String jcdBikesApiKey = parse.getOptionValue(JOB_PARAM_JCD_BIKES_API_KEY);
+            String weatherApiKey = parse.getOptionValue(JOB_PARAM_WEATHER_API_KEY);
+            startJob(outputDir, jcdBikesApiKey, weatherApiKey);
+//            new BikeAndWeatherDataJob().saveData(outputDir, jcdBikesApiKey, weatherApiKey);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -49,10 +73,12 @@ public class BikesDataSetBuilder {
 
     }
 
-    private static void startJob(String outputDir) {
+    private static void startJob(String outputDir, String jcdBikesApiKey, String weatherApiKey) {
         try {
             JobDetail job = JobBuilder.newJob(BikeAndWeatherDataJob.class)
-                    .usingJobData("outputDir", outputDir)
+                    .usingJobData(JOB_PARAM_OUTPUT_DIR, outputDir)
+                    .usingJobData(JOB_PARAM_JCD_BIKES_API_KEY, jcdBikesApiKey)
+                    .usingJobData(JOB_PARAM_WEATHER_API_KEY, weatherApiKey)
                     .withIdentity("BikesAndWeather", "BikesAndWeather")
                     .build();
 
@@ -74,12 +100,14 @@ public class BikesDataSetBuilder {
     public static class BikeAndWeatherDataJob implements Job {
         @Override
         public void execute(JobExecutionContext context) throws JobExecutionException {
-            final String outputDir = (String) context.getMergedJobDataMap().get("outputDir");
-            saveData(outputDir);
+            final String outputDir = (String) context.getMergedJobDataMap().get(JOB_PARAM_OUTPUT_DIR);
+            final String jcdBikesApiKey = (String) context.getMergedJobDataMap().get(JOB_PARAM_JCD_BIKES_API_KEY);
+            final String weatherApiKey = (String) context.getMergedJobDataMap().get(JOB_PARAM_WEATHER_API_KEY);
+            saveData(outputDir, jcdBikesApiKey, weatherApiKey);
         }
 
-        public void saveData(String outputDir) {
-            final List<Contract> contracts = Services.jcdBikeService().contracts(VELIB_API_KEY);
+        public void saveData(String outputDir, String jcdBikesApiKey, String weatherApiKey) {
+            final List<Contract> contracts = Services.jcdBikeService().contracts(jcdBikesApiKey);
 
             saveContractOfDay(outputDir, contracts);
 
@@ -100,8 +128,8 @@ public class BikesDataSetBuilder {
                 final int year = calendar.get(Calendar.YEAR);
 
                 final String where = (city + "," + contract.getCountry().toLowerCase());
-                final WeatherData weatherData = Services.weather().now(WEATHER_API_KEY, where, "metric");
-                final List<Station> stations = Services.jcdBikeService().stations(VELIB_API_KEY, contract.getName());
+                final WeatherData weatherData = Services.weather().now(weatherApiKey, where, "metric");
+                final List<Station> stations = Services.jcdBikeService().stations(jcdBikesApiKey, contract.getName());
                 saveStationStaticData(city,outputDir, stations, year, month, dayOfMonth);
                 saveWeatherForContract(city,outputDir, weatherData, year, month, dayOfMonth, hour, minute);
                 saveStationsDynamicData(city,outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
