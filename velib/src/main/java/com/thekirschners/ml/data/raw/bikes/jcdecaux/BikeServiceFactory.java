@@ -12,9 +12,6 @@ import org.jboss.resteasy.plugins.providers.jackson.ResteasyJacksonProvider;
  * Created by emilkirschner on 19/02/16.
  */
 public class BikeServiceFactory {
-    static final String API_KEY = "77571707f075ff31ce2dc32fa6da4e9a407c9a0e";
-
-
     private static final BikeServiceFactory INSTANCE = new BikeServiceFactory();
 
     public static BikeServiceFactory instance() {

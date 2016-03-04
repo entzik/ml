@@ -30,9 +30,6 @@ public class WeatherServiceFactory {
         ResteasyWebTarget target = client.target("http://api.openweathermap.org/data/2.5/weather");
 
         weatherService = target.proxy(WeatherService.class);
-
-        WeatherData now = weatherService.now("b77c1ed4bdf983030de5fdbbd444b8f6", "Paris,FR", "metric");
-        System.out.println("now = " + now);
     }
 
     public WeatherService get() {
