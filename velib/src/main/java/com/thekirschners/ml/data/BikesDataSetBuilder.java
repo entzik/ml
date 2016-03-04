@@ -1,7 +1,7 @@
 package com.thekirschners.ml.data;
 
-import com.thekirschners.ml.data.raw.bikes.jcdecaux.DynamicStationData;
 import com.thekirschners.ml.data.raw.bikes.jcdecaux.Contract;
+import com.thekirschners.ml.data.raw.bikes.jcdecaux.DynamicStationData;
 import com.thekirschners.ml.data.raw.bikes.jcdecaux.Station;
 import com.thekirschners.ml.data.raw.weather.WeatherData;
 import org.apache.commons.cli.*;
@@ -12,8 +12,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.*;
 import java.util.Calendar;
+import java.util.*;
 
 /**
  * Created by emilkirschner on 26/02/16.
@@ -27,28 +27,28 @@ public class BikesDataSetBuilder {
 
 
     public static void main(String[] args) {
-        Option dataDirOption   = Option.builder().argName(JOB_PARAM_OUTPUT_DIR)
+        Option dataDirOption = Option.builder().argName(JOB_PARAM_OUTPUT_DIR)
                 .longOpt(JOB_PARAM_OUTPUT_DIR)
                 .hasArg()
-                .desc(  "dataset output directory" )
+                .desc("dataset output directory")
                 .hasArg(true)
                 .numberOfArgs(1)
                 .required(true)
                 .build();
 
-        Option jcdBikesApiKeyOption   = Option.builder().argName(JOB_PARAM_JCD_BIKES_API_KEY)
+        Option jcdBikesApiKeyOption = Option.builder().argName(JOB_PARAM_JCD_BIKES_API_KEY)
                 .longOpt(JOB_PARAM_JCD_BIKES_API_KEY)
                 .hasArg()
-                .desc(  "a valid jcdecaux API key obtained from https://developer.jcdecaux.com/#/signup" )
+                .desc("a valid jcdecaux API key obtained from https://developer.jcdecaux.com/#/signup")
                 .hasArg(true)
                 .numberOfArgs(1)
                 .required(true)
                 .build();
 
-        Option weatherApiKeyOption   = Option.builder().argName(JOB_PARAM_WEATHER_API_KEY)
+        Option weatherApiKeyOption = Option.builder().argName(JOB_PARAM_WEATHER_API_KEY)
                 .longOpt(JOB_PARAM_WEATHER_API_KEY)
                 .hasArg()
-                .desc(  "a valid open weather map key obtained from http://openweathermap.org/appid" )
+                .desc("a valid open weather map key obtained from http://openweathermap.org/appid")
                 .hasArg(true)
                 .numberOfArgs(1)
                 .required(true)
@@ -67,7 +67,10 @@ public class BikesDataSetBuilder {
             startJob(outputDir, jcdBikesApiKey, weatherApiKey);
 //            new BikeAndWeatherDataJob().saveData(outputDir, jcdBikesApiKey, weatherApiKey);
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.setWidth(256);
+            formatter.printHelp("BikesDataSetBuilder", options);
         }
 
 
@@ -130,9 +133,9 @@ public class BikesDataSetBuilder {
                 final String where = (city + "," + contract.getCountry().toLowerCase());
                 final WeatherData weatherData = Services.weather().now(weatherApiKey, where, "metric");
                 final List<Station> stations = Services.jcdBikeService().stations(jcdBikesApiKey, contract.getName());
-                saveStationStaticData(city,outputDir, stations, year, month, dayOfMonth);
-                saveWeatherForContract(city,outputDir, weatherData, year, month, dayOfMonth, hour, minute);
-                saveStationsDynamicData(city,outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
+                saveStationStaticData(city, outputDir, stations, year, month, dayOfMonth);
+                saveWeatherForContract(city, outputDir, weatherData, year, month, dayOfMonth, hour, minute);
+                saveStationsDynamicData(city, outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
             }
         }
 
@@ -209,7 +212,7 @@ public class BikesDataSetBuilder {
         }
 
         private void saveStationsDynamicData(String city, String outputDir, int month, int dayOfMonth, int minute, int hour, int dayOfWeek, int year, Contract contract, WeatherData metric, List<Station> stations) {
-            HashMap<String,PrintWriter> writers = null;
+            HashMap<String, PrintWriter> writers = null;
             try {
                 writers = new HashMap<>();
                 for (Station station : stations) {
