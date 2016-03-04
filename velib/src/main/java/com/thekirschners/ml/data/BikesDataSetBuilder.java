@@ -40,8 +40,8 @@ public class BikesDataSetBuilder {
         try {
             CommandLine parse = new DefaultParser().parse(options, args);
             String outputDir = parse.getOptionValue("outputDir");
-            startJob(outputDir);
-//            new BikeAndWeatherDataJob().saveData(outputDir);
+//            startJob(outputDir);
+            new BikeAndWeatherDataJob().saveData(outputDir);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -79,22 +79,26 @@ public class BikesDataSetBuilder {
         }
 
         public void saveData(String outputDir) {
-            long time = new Date().getTime();
-            final Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(time);
             final List<Contract> contracts = Services.jcdBikeService().contracts(VELIB_API_KEY);
 
-            final int month = calendar.get(Calendar.MONTH);
-            final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-            final int minute = calendar.get(Calendar.MINUTE);
-            final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-            final int year = calendar.get(Calendar.YEAR);
-
-            saveContractOfDay(outputDir, contracts, year, month, dayOfMonth);
+            saveContractOfDay(outputDir, contracts);
 
             for (Contract contract : contracts) {
-                String city = contract.getName().toLowerCase().replace("valence", "valencia").replace("bruxelles-capitale", "bruxelles");
+                if (!Contract.supportedContracts().contains(contract.getName()))
+                    continue;
+
+                final String city = contract.getName().toLowerCase().replace("valence", "valencia").replace("bruxelles-capitale", "bruxelles");
+                final TimeZone tz = contract.getTimeZone();
+
+                final Calendar calendar = Calendar.getInstance(tz);
+                calendar.setTimeInMillis(new Date().getTime());
+                final int month = calendar.get(Calendar.MONTH);
+                final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+                final int minute = calendar.get(Calendar.MINUTE);
+                final int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                final int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+                final int year = calendar.get(Calendar.YEAR);
+
                 final String where = (city + "," + contract.getCountry().toLowerCase());
                 final WeatherData weatherData = Services.weather().now(WEATHER_API_KEY, where, "metric");
                 final List<Station> stations = Services.jcdBikeService().stations(VELIB_API_KEY, contract.getName());
@@ -102,6 +106,16 @@ public class BikesDataSetBuilder {
                 saveWeatherForContract(city,outputDir, weatherData, year, month, dayOfMonth, hour, minute);
                 saveStationsDynamicData(city,outputDir, month, dayOfMonth, minute, hour, dayOfWeek, year, contract, weatherData, stations);
             }
+        }
+
+        private TimeZone timezoneForCity(String city) {
+            String[] availableIDs = TimeZone.getAvailableIDs();
+            for (String id : availableIDs)
+                if (id.toLowerCase().contains(city)) {
+                    System.out.println("id = " + id);
+                    return TimeZone.getTimeZone(id);
+                }
+            return TimeZone.getDefault();
         }
 
         private void saveWeatherForContract(String city, String outputDir, WeatherData weatherData, int year, int month, int dayOfMonth, int hour, int minute) {
@@ -122,7 +136,13 @@ public class BikesDataSetBuilder {
             }
         }
 
-        private void saveContractOfDay(String outputDir, List<Contract> contracts, int year, int month, int dayOfMonth) {
+        private void saveContractOfDay(final String outputDir, final List<Contract> contracts) {
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(new Date().getTime());
+            final int month = calendar.get(Calendar.MONTH);
+            final int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+            final int year = calendar.get(Calendar.YEAR);
+
             final String fileName = "bike-contracts-" + year + "_" + month + "_" + dayOfMonth + ".csv";
             final File outputFile = new File(new File(outputDir), fileName);
             if (!outputFile.exists()) {
