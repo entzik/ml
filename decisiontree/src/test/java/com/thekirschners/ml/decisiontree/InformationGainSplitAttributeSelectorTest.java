@@ -34,4 +34,11 @@ public class InformationGainSplitAttributeSelectorTest {
         double informationGain = new InformationGainSplitAttributeSelector().informationGain(dataSet, 1, 5);
         TestCase.assertEquals("information gain", 0.246d, informationGain, 0.001);
     }
+
+    @Test
+    public void testSelectSplitAttribute() {
+        List<Tuple> dataSet = TestDataSet.getDataSet();
+        int splitAttribute = new InformationGainSplitAttributeSelector().selectSplitAttribute(dataSet, new Integer[]{1, 2, 3, 4}, 5);
+        TestCase.assertEquals("splitAttribute", 1, splitAttribute);
+    }
 }

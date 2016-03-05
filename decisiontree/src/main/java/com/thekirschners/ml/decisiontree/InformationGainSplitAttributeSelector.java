@@ -1,9 +1,12 @@
 package com.thekirschners.ml.decisiontree;
 
+import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Tuple;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -14,18 +17,12 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
     public static final double LOG2_2 = Math.log(2.0d);
 
     @Override
-    public int selectSplitAttribute(final Collection<Tuple> tuples, final int[] splitAttributeCandidates, final int classAttr) {
-        Double max = Double.MIN_VALUE;
-        int selectedSplitCandidate = -1;
-        for (int splitAttributeCandidate : splitAttributeCandidates) {
-            double gain = informationGain(tuples, splitAttributeCandidate, classAttr);
-            if (gain > max) {
-                max = gain;
-                selectedSplitCandidate = splitAttributeCandidate;
-            }
-        }
+    public int selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+        return Arrays.asList(splitAttributeCandidates).parallelStream()
+                .map(i -> new Pair<>(i, informationGain(tuples, i, classAttr)))
+                .reduce((p1, p2) -> p1.getB() > p2.getB() ? p1 : p2)
+                .get().getA();
 
-        return selectedSplitCandidate;
     }
 
     double entropy(Collection<Tuple> tuples, int classAttr) {
@@ -47,7 +44,7 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
         return collect.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
     }
 
-    public double informationGain(final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
+    double informationGain(final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
         return entropy(tuples, classAttr) - splitEntropy(tuples, splitAtribute, classAttr);
     }
 }

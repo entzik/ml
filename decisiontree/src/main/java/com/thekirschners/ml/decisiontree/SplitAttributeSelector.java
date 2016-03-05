@@ -8,5 +8,5 @@ import java.util.Collection;
  * Created by emilkirschner on 02/03/16.
  */
 public interface SplitAttributeSelector {
-    int selectSplitAttribute(Collection<Tuple> tuples, int[] splitAttributeCandidates, int classAttr);
+    int selectSplitAttribute(Collection<Tuple> tuples, Integer[] splitAttributeCandidates, int classAttr);
 }
