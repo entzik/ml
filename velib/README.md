@@ -1,4 +1,4 @@
-This module contains code to build a data set about city bike sharing services operated by JCDecaux. Data is extracted using 
+This module contains code to build a city bike sharing services data set for services operated by JCDecaux. Data is extracted using 
 the JCDecaux open data API at https://developer.jcdecaux.com/#/opendata/vls?page=getstarted and enriched with weather information 
 for cities where services operate. Weather data is obtained from OpenWeatherMap - http://openweathermap.org/api.
 
