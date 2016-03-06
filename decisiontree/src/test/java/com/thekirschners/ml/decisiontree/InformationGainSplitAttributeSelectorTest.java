@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -24,7 +25,9 @@ public class InformationGainSplitAttributeSelectorTest {
     @Test
     public void testSplitEntropy() {
         List<Tuple> dataSet = TestDataSet.getDataSet();
-        double splitEntropy = new InformationGainSplitAttributeSelector().splitEntropy(dataSet, 1, 5);
+        InformationGainSplitAttributeSelector informationGainSplitAttributeSelector = new InformationGainSplitAttributeSelector();
+        Collection<List<Tuple>> partitions = informationGainSplitAttributeSelector.partitionOnAttribute(dataSet, 1);
+        double splitEntropy = informationGainSplitAttributeSelector.splitEntropy(dataSet, partitions, 5);
         TestCase.assertEquals("entropy value", 0.694d, splitEntropy, 0.001);
     }
 
@@ -33,7 +36,8 @@ public class InformationGainSplitAttributeSelectorTest {
         List<Tuple> dataSet = TestDataSet.getDataSet();
         InformationGainSplitAttributeSelector informationGainSplitAttributeSelector = new InformationGainSplitAttributeSelector();
         double entropy = informationGainSplitAttributeSelector.entropy(dataSet, 5);
-        double informationGain = informationGainSplitAttributeSelector.informationGain(entropy, dataSet, 1, 5);
+        Collection<List<Tuple>> partitions = informationGainSplitAttributeSelector.partitionOnAttribute(dataSet, 1);
+        double informationGain = informationGainSplitAttributeSelector.informationGain(entropy, dataSet, partitions, 5);
         TestCase.assertEquals("information gain", 0.246d, informationGain, 0.001);
     }
 

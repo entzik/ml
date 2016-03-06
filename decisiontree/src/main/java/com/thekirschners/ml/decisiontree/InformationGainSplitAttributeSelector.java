@@ -19,8 +19,9 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
     @Override
     public int selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
         final double entropy = entropy(tuples, classAttr);
+
         return Arrays.asList(splitAttributeCandidates).parallelStream()
-                .map(i -> new Pair<>(i, informationGain(entropy, tuples, i, classAttr)))
+                .map(i -> new Pair<>(i, informationGain(entropy, tuples, partitionOnAttribute(tuples, i), classAttr)))
                 .reduce((p1, p2) -> p1.getB() > p2.getB() ? p1 : p2)
                 .get().getA();
 
@@ -37,15 +38,19 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
                 .collect(Collectors.summingDouble(probability -> probability * Math.log(probability) / LOG2_2));
     }
 
-     double splitEntropy(final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
+     double splitEntropy(final Collection<Tuple> tuples, final Collection<List<Tuple>> partitions, final int classAttr) {
         final double initialSize = tuples.size();
-        // partition the touples on provided split attribute
-        final Collection<List<Tuple>> collect = tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAtribute))).values();
         // return the weighted entropy
-        return collect.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
+        return partitions.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
     }
 
-    double informationGain(double entropy, final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
-        return  entropy - splitEntropy(tuples, splitAtribute, classAttr);
+    Collection<List<Tuple>> partitionOnAttribute(Collection<Tuple> tuples, int splitAtribute) {
+        return tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAtribute))).values();
     }
+
+    double informationGain(double entropy, final Collection<Tuple> tuples, final Collection<List<Tuple>> partitions, final int classAttr) {
+        return  entropy - splitEntropy(tuples, partitions, classAttr);
+    }
+
+
 }
