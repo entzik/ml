@@ -18,8 +18,9 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
 
     @Override
     public int selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+        final double entropy = entropy(tuples, classAttr);
         return Arrays.asList(splitAttributeCandidates).parallelStream()
-                .map(i -> new Pair<>(i, informationGain(tuples, i, classAttr)))
+                .map(i -> new Pair<>(i, informationGain(entropy, tuples, i, classAttr)))
                 .reduce((p1, p2) -> p1.getB() > p2.getB() ? p1 : p2)
                 .get().getA();
 
@@ -44,7 +45,7 @@ public class InformationGainSplitAttributeSelector implements SplitAttributeSele
         return collect.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
     }
 
-    double informationGain(final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
-        return entropy(tuples, classAttr) - splitEntropy(tuples, splitAtribute, classAttr);
+    double informationGain(double entropy, final Collection<Tuple> tuples, final int splitAtribute, final int classAttr) {
+        return  entropy - splitEntropy(tuples, splitAtribute, classAttr);
     }
 }

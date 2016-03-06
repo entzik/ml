@@ -31,7 +31,9 @@ public class InformationGainSplitAttributeSelectorTest {
     @Test
     public void testInformationGain() {
         List<Tuple> dataSet = TestDataSet.getDataSet();
-        double informationGain = new InformationGainSplitAttributeSelector().informationGain(dataSet, 1, 5);
+        InformationGainSplitAttributeSelector informationGainSplitAttributeSelector = new InformationGainSplitAttributeSelector();
+        double entropy = informationGainSplitAttributeSelector.entropy(dataSet, 5);
+        double informationGain = informationGainSplitAttributeSelector.informationGain(entropy, dataSet, 1, 5);
         TestCase.assertEquals("information gain", 0.246d, informationGain, 0.001);
     }
 
