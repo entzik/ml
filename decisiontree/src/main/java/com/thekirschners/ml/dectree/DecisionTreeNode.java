@@ -1,4 +1,4 @@
-package com.thekirschners.ml.decisiontree;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Tuple;
 

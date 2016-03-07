@@ -1,4 +1,4 @@
-package com.thekirschners.ml.decisiontree;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Tuple;
@@ -6,13 +6,12 @@ import com.thekirschners.ml.data.Tuple;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 /**
  * Created by emilkirschner on 29/02/16.
  */
-public class InformationGainSplitAttributeSelector implements SplitAttributeSelector {
+public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
 
     public static final double LOG2_2 = Math.log(2.0d);
 

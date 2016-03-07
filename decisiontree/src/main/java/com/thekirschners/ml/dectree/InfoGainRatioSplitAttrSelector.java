@@ -1,4 +1,4 @@
-package com.thekirschners.ml.decisiontree;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Triplet;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * Created by emilkirschner on 29/02/16.
  */
-public class InformationGainRatioSplitAttributeSelector extends InformationGainSplitAttributeSelector {
+public class InfoGainRatioSplitAttrSelector extends InfoGainSplitAttrSelector {
 
     public static final double LOG2_2 = Math.log(2.0d);
 

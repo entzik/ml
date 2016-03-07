@@ -1,4 +1,4 @@
-package com.thekirschners.ml.decisiontree;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.TestDataSet;
 import com.thekirschners.ml.data.Tuple;
@@ -14,11 +14,11 @@ import java.util.List;
  * Created by emilkirschner on 05/03/16.
  */
 @RunWith(JUnit4.class)
-public class InformationGainRatioSplitAttributeSelectorTest {
+public class InfoGainRatioSplitAttrSelectorTest {
     @Test
     public void testsplitInfo() {
         List<Tuple> dataSet = TestDataSet.getDataSet();
-        InformationGainRatioSplitAttributeSelector selector = new InformationGainRatioSplitAttributeSelector();
+        InfoGainRatioSplitAttrSelector selector = new InfoGainRatioSplitAttrSelector();
         Collection<List<Tuple>> partitions = selector.partitionOnAttribute(dataSet, 2);
         double splitInfoA = selector.splitInfo(dataSet, partitions, 5);
         TestCase.assertEquals("splitInfo", 1.557, splitInfoA, 0.001);
@@ -27,7 +27,7 @@ public class InformationGainRatioSplitAttributeSelectorTest {
     @Test
     public void testGainRatio() {
         List<Tuple> dataSet = TestDataSet.getDataSet();
-        InformationGainRatioSplitAttributeSelector selector = new InformationGainRatioSplitAttributeSelector();
+        InfoGainRatioSplitAttrSelector selector = new InfoGainRatioSplitAttrSelector();
         double entropy = selector.entropy(dataSet, 5);
         double gainRatio = selector.gainRatio(dataSet, 5, entropy, selector.partitionOnAttribute(dataSet, 2));
         TestCase.assertEquals("gain ratio", 0.019, gainRatio, 0.001);
@@ -36,7 +36,7 @@ public class InformationGainRatioSplitAttributeSelectorTest {
     @Test
     public void testSelectSplitAttribute() {
         List<Tuple> dataSet = TestDataSet.getDataSet();
-        int splitAttribute = new InformationGainRatioSplitAttributeSelector().selectSplitAttribute(dataSet, new Integer[]{1, 2, 3, 4}, 5);
+        int splitAttribute = new InfoGainRatioSplitAttrSelector().selectSplitAttribute(dataSet, new Integer[]{1, 2, 3, 4}, 5);
         TestCase.assertEquals("splitAttribute", 1, splitAttribute);
     }
 }
