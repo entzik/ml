@@ -18,7 +18,7 @@ public class DecisionTreeNode {
     private final String classValue;
 
     public DecisionTreeNode(SplitAttributeSelector splitAttributeSelector, List<Tuple> tuples, Integer[] attributes, int classAttribute) {
-        if (attributes.length == 1) { // this is a leaf
+        if (attributes.length == 0) { // this is a leaf
             // count classes by name
             Map<String, Long> classCountByName = tuples.parallelStream()
                     .map(t -> t.attribute(classAttribute))
@@ -27,25 +27,32 @@ public class DecisionTreeNode {
             this.classValue = classCountByName.entrySet().parallelStream().max(Comparator.comparingLong(Map.Entry::getValue)).get().getKey();
             this.children = null;
             this.splitAttribute = -1;
+            // TODO calculate confidence as |majority_class| / |tuples|
         } else { // not a leaf
             this.classValue = null;
-            // retrieve the best attribute to split on and the tuples partitioned by values of the attribute
-            Pair<Integer, Map<String, List<Tuple>>> attributeSelectionResult = splitAttributeSelector.selectSplitAttribute(tuples, attributes, classAttribute);
-            this.splitAttribute = attributeSelectionResult.getA();
-            Map<String, List<Tuple>> partitionsByAttribute = attributeSelectionResult.getB();
-
-            // substract the selected attribute
-            Integer[] remainingAttr = new Integer[attributes.length - 1];
-            for (int i = 0; i < attributes.length; i++) {
-                if (i < splitAttribute)
-                    remainingAttr[i] = attributes[i];
-                if (i > splitAttribute) ;
-                remainingAttr[i - 1] = attributes[i];
-            }
-
-            // create children by further splitting the partitions
             this.children = new HashMap<>();
-            partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new DecisionTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
+            // retrieve the best attribute to split on and the tuples partitioned by values of the attribute
+            if (attributes.length == 1) {
+                this.splitAttribute = attributes[0];
+                Map<String, List<Tuple>> partitionsByAttribute = tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAttribute)));
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new DecisionTreeNode(splitAttributeSelector, entry.getValue(), new Integer[0], classAttribute)));
+            } else {
+                Pair<Integer, Map<String, List<Tuple>>> attributeSelectionResult = splitAttributeSelector.selectSplitAttribute(tuples, attributes, classAttribute);
+                this.splitAttribute = attributeSelectionResult.getA();
+                Map<String, List<Tuple>> partitionsByAttribute = attributeSelectionResult.getB();
+
+                // substract the selected attribute
+                Integer[] remainingAttr = new Integer[attributes.length - 1];
+                for (int i = 0; i < attributes.length; i++) {
+                    if (i < splitAttribute)
+                        remainingAttr[i] = attributes[i];
+                    if (i > splitAttribute) ;
+                    remainingAttr[i - 1] = attributes[i];
+                }
+
+                // create children by further splitting the partitions
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new DecisionTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
+            }
         }
     }
 
