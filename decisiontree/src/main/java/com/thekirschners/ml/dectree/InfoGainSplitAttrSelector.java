@@ -1,11 +1,10 @@
 package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Pair;
+import com.thekirschners.ml.data.Triplet;
 import com.thekirschners.ml.data.Tuple;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -16,14 +15,18 @@ public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
     public static final double LOG2_2 = Math.log(2.0d);
 
     @Override
-    public int selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+    public Pair<Integer, Map<String, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
         final double entropy = entropy(tuples, classAttr);
 
-        return Arrays.asList(splitAttributeCandidates).parallelStream()
-                .map(i -> new Pair<>(i, informationGain(entropy, tuples, partitionOnAttribute(tuples, i), classAttr)))
-                .reduce((p1, p2) -> p1.getB() > p2.getB() ? p1 : p2)
-                .get().getA();
-
+        Triplet<Integer, Double, Map<String, List<Tuple>>> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
+                .map(i -> {
+                    Map<String, List<Tuple>> partitions = partitionOnAttribute(tuples, i);
+                    return new Triplet<>(i, informationGain(entropy, tuples, partitions.values(), classAttr), partitions);
+                })
+                .max(Comparator.comparingDouble(Triplet::getB))
+                .get();
+        Map<String, List<Tuple>> partitions = triplet.getC();
+        return new Pair<>(triplet.getA(), partitions);
     }
 
     double entropy(Collection<Tuple> tuples, int classAttr) {
@@ -43,8 +46,8 @@ public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
         return partitions.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
     }
 
-    Collection<List<Tuple>> partitionOnAttribute(Collection<Tuple> tuples, int splitAtribute) {
-        return tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAtribute))).values();
+    Map<String,List<Tuple>> partitionOnAttribute(Collection<Tuple> tuples, int splitAtribute) {
+        return tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAtribute)));
     }
 
     double informationGain(double entropy, final Collection<Tuple> tuples, final Collection<List<Tuple>> partitions, final int classAttr) {

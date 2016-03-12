@@ -4,9 +4,7 @@ import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Triplet;
 import com.thekirschners.ml.data.Tuple;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -17,14 +15,14 @@ public class InfoGainRatioSplitAttrSelector extends InfoGainSplitAttrSelector {
     public static final double LOG2_2 = Math.log(2.0d);
 
     @Override
-    public int selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+    public Pair<Integer, Map<String, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
         final double entropy = entropy(tuples, classAttr);
-        return Arrays.asList(splitAttributeCandidates).parallelStream()
+        Triplet<Integer, Map<String, List<Tuple>>, Double> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
                 .map(i -> new Pair<>(i, partitionOnAttribute(tuples, i)))
-                .map(p -> new Triplet<>(p, gainRatio(tuples, classAttr, entropy, p.getB())))
-                .reduce((t1, t2) -> t1.getC() > t2.getC() ? t1 : t2)
-                .get().getA();
-
+                .map(p -> new Triplet<>(p, gainRatio(tuples, classAttr, entropy, p.getB().values())))
+                .max(Comparator.comparingDouble(Triplet::getC))
+                .get();
+        return new Pair<>(triplet.getA(), triplet.getB());
     }
 
     double gainRatio(Collection<Tuple> tuples, int classAttr, double entropy, Collection<List<Tuple>> partitions) {
