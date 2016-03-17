@@ -19,7 +19,6 @@ public interface TreeNode {
             pw.println(s + element);
             element.children().forEach(te -> print(te, s + "\t", pw));
         }
-
     }
 
     public static class Builder {
