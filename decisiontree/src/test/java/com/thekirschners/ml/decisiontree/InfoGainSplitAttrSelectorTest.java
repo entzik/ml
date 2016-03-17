@@ -1,4 +1,4 @@
-package com.thekirschners.ml.dectree;
+package com.thekirschners.ml.decisiontree;
 
 import com.thekirschners.ml.data.TestDataSet;
 import com.thekirschners.ml.data.Tuple;
