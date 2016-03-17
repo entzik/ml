@@ -24,9 +24,5 @@ public class TestDataSet {
                 new Tuple(new String[]{"13", "middle", "high", "yes", "fair", "yes"}),
                 new Tuple(new String[]{"14", "senior", "medium", "no", "excellent", "no"})
         );
-
-        // info_D = 0.940
-        // info_age_D = 0.694
-        // informationGain(age) = 0.246
     }
 }

@@ -1,4 +1,4 @@
-package com.thekirschners.ml.dectree.builder;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Tuple;
 
@@ -8,7 +8,7 @@ import java.util.Collections;
 /**
  * Created by emilkirschner on 16/03/16.
  */
-public class Leaf implements TreeElement {
+public class Leaf implements TreeNode {
     final Object classValue;
 
     public Leaf(Object classValue) {
@@ -26,7 +26,7 @@ public class Leaf implements TreeElement {
     }
 
     @Override
-    public Collection<TreeElement> children() {
+    public Collection<TreeNode> children() {
         return Collections.emptyList();
     }
 

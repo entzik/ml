@@ -1,22 +1,21 @@
-package com.thekirschners.ml.dectree.builder;
+package com.thekirschners.ml.dectree;
 
 
 import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Triplet;
 import com.thekirschners.ml.data.Tuple;
-import com.thekirschners.ml.dectree.SplitAttributeSelector;
 
 import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public interface TreeElement {
+public interface TreeNode {
     public Object predict(Tuple t);
     public boolean isLeaf();
-    public Collection<TreeElement> children();
+    public Collection<TreeNode> children();
 
     public static class Printer {
-        public static void print(TreeElement element, String s, PrintStream pw) {
+        public static void print(TreeNode element, String s, PrintStream pw) {
             pw.println(s + element);
             element.children().forEach(te -> print(te, s + "\t", pw));
         }
@@ -24,14 +23,14 @@ public interface TreeElement {
     }
 
     public static class Builder {
-        public static TreeElement build(SplitAttributeSelector splitAttributeSelector, List<Tuple> data, Integer[] attributes, int classAttribute) {
-            TreeNode rootNode = new TreeNode();
-            Queue<Triplet<TreeNode, List<Tuple>, Integer[]>> workSleeve = new ArrayDeque<>();
+        public static TreeNode build(SplitAttributeSelector splitAttributeSelector, List<Tuple> data, Integer[] attributes, int classAttribute) {
+            ParentNode rootNode = new ParentNode();
+            Queue<Triplet<ParentNode, List<Tuple>, Integer[]>> workSleeve = new ArrayDeque<>();
             workSleeve.add(new Triplet<>(rootNode, data, attributes));
 
             while (!workSleeve.isEmpty()) {
-                Triplet<TreeNode, List<Tuple>, Integer[]> pop = workSleeve.poll();
-                TreeNode node = pop.getA();
+                Triplet<ParentNode, List<Tuple>, Integer[]> pop = workSleeve.poll();
+                ParentNode node = pop.getA();
                 List<Tuple> partition = pop.getB();
                 Integer[] crtAttributes = pop.getC();
 
@@ -42,7 +41,7 @@ public interface TreeElement {
                     break;
 
                     default: {
-                        Map<Object, TreeElement> children = new HashMap<>();
+                        Map<Object, TreeNode> children = new HashMap<>();
 
                         Pair<Integer, Map<String, List<Tuple>>> splitAttrAndPartitions = splitAttributeSelector.selectSplitAttribute(partition, crtAttributes, classAttribute);
                         int splitAttr = splitAttrAndPartitions.getA();
@@ -51,7 +50,7 @@ public interface TreeElement {
                         Integer[] remainingAttr = removeValue(crtAttributes, splitAttr);
 
                         for (Map.Entry<String, List<Tuple>> entry : partitionsByAttr.entrySet()) {
-                            TreeNode child = new TreeNode();
+                            ParentNode child = new ParentNode();
                             children.put(entry.getKey(), child);
                             workSleeve.add(new Triplet<>(child, entry.getValue(), remainingAttr));
                         }
@@ -78,8 +77,8 @@ public interface TreeElement {
             return remainingAttr;
         }
 
-        private static Map<Object, TreeElement> getObjectTreeElementMap(int classAttribute, Integer crtAttribute, List<Tuple> partition) {
-            Map<Object, TreeElement> children = new HashMap<>();
+        private static Map<Object, TreeNode> getObjectTreeElementMap(int classAttribute, Integer crtAttribute, List<Tuple> partition) {
+            Map<Object, TreeNode> children = new HashMap<>();
             Map<String, List<Tuple>> partitions = partition.parallelStream().collect(Collectors.groupingBy(tuple -> tuple.attribute(crtAttribute)));
             for (Map.Entry<String, List<Tuple>> entry : partitions.entrySet()) {
                 Map<String, Long> classCountByName = entry.getValue().parallelStream()

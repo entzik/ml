@@ -1,8 +1,7 @@
-package com.thekirschners.ml.dectree.builder;
+package com.thekirschners.ml.dectree;
 
 import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Tuple;
-import com.thekirschners.ml.dectree.SplitAttributeSelector;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,12 +9,12 @@ import java.util.stream.Collectors;
 /**
  * Created by emilkirschner on 26/02/16.
  */
-public class RecDecisionTreeNode implements TreeElement{
+public class RecursiveTreeNode implements TreeNode {
     private final int splitAttribute;
-    private final Map<String, RecDecisionTreeNode> children;
+    private final Map<String, RecursiveTreeNode> children;
     private final String classValue;
 
-    public RecDecisionTreeNode(SplitAttributeSelector splitAttributeSelector, List<Tuple> tuples, Integer[] attributes, int classAttribute) {
+    public RecursiveTreeNode(SplitAttributeSelector splitAttributeSelector, List<Tuple> tuples, Integer[] attributes, int classAttribute) {
         if (attributes.length == 0) { // this is a leaf
             // count classes by name
             Map<String, Long> classCountByName = tuples.parallelStream()
@@ -33,7 +32,7 @@ public class RecDecisionTreeNode implements TreeElement{
             if (attributes.length == 1) {
                 this.splitAttribute = attributes[0];
                 Map<String, List<Tuple>> partitionsByAttribute = tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAttribute)));
-                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecDecisionTreeNode(splitAttributeSelector, entry.getValue(), new Integer[0], classAttribute)));
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecursiveTreeNode(splitAttributeSelector, entry.getValue(), new Integer[0], classAttribute)));
             } else {
                 Pair<Integer, Map<String, List<Tuple>>> attributeSelectionResult = splitAttributeSelector.selectSplitAttribute(tuples, attributes, classAttribute);
                 this.splitAttribute = attributeSelectionResult.getA();
@@ -50,7 +49,7 @@ public class RecDecisionTreeNode implements TreeElement{
                 }
 
                 // create children by further splitting the partitions
-                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecDecisionTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecursiveTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
             }
         }
     }
@@ -68,7 +67,7 @@ public class RecDecisionTreeNode implements TreeElement{
     }
 
     @Override
-    public Collection<TreeElement> children() {
+    public Collection<TreeNode> children() {
         return children == null ? new ArrayList<>() : new ArrayList<>(children.values());
     }
 
