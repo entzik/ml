@@ -1,23 +1,21 @@
-package com.thekirschners.ml.dectree;
+package com.thekirschners.ml.dectree.builder;
 
 import com.thekirschners.ml.data.Pair;
 import com.thekirschners.ml.data.Tuple;
+import com.thekirschners.ml.dectree.SplitAttributeSelector;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Created by emilkirschner on 26/02/16.
  */
-public class DecisionTreeNode {
+public class RecDecisionTreeNode implements TreeElement{
     private final int splitAttribute;
-    private final Map<String, DecisionTreeNode> children;
+    private final Map<String, RecDecisionTreeNode> children;
     private final String classValue;
 
-    public DecisionTreeNode(SplitAttributeSelector splitAttributeSelector, List<Tuple> tuples, Integer[] attributes, int classAttribute) {
+    public RecDecisionTreeNode(SplitAttributeSelector splitAttributeSelector, List<Tuple> tuples, Integer[] attributes, int classAttribute) {
         if (attributes.length == 0) { // this is a leaf
             // count classes by name
             Map<String, Long> classCountByName = tuples.parallelStream()
@@ -35,7 +33,7 @@ public class DecisionTreeNode {
             if (attributes.length == 1) {
                 this.splitAttribute = attributes[0];
                 Map<String, List<Tuple>> partitionsByAttribute = tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAttribute)));
-                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new DecisionTreeNode(splitAttributeSelector, entry.getValue(), new Integer[0], classAttribute)));
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecDecisionTreeNode(splitAttributeSelector, entry.getValue(), new Integer[0], classAttribute)));
             } else {
                 Pair<Integer, Map<String, List<Tuple>>> attributeSelectionResult = splitAttributeSelector.selectSplitAttribute(tuples, attributes, classAttribute);
                 this.splitAttribute = attributeSelectionResult.getA();
@@ -43,17 +41,23 @@ public class DecisionTreeNode {
 
                 // substract the selected attribute
                 Integer[] remainingAttr = new Integer[attributes.length - 1];
-                for (int i = 0; i < attributes.length; i++) {
-                    if (i < splitAttribute)
-                        remainingAttr[i] = attributes[i];
-                    if (i > splitAttribute) ;
-                    remainingAttr[i - 1] = attributes[i];
+                int runner = 0;
+                for (Integer ndx : attributes) {
+                    if (!ndx.equals(splitAttribute)) {
+                        remainingAttr[runner] = ndx;
+                        runner ++;
+                    }
                 }
 
                 // create children by further splitting the partitions
-                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new DecisionTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
+                partitionsByAttribute.entrySet().forEach(entry -> children.put(entry.getKey(), new RecDecisionTreeNode(splitAttributeSelector, entry.getValue(), remainingAttr, classAttribute)));
             }
         }
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return classValue != null;
     }
 
     public String predict(Tuple t) {
@@ -61,5 +65,18 @@ public class DecisionTreeNode {
             return classValue;
         else
             return children.get(t.attribute(splitAttribute)).predict(t);
+    }
+
+    @Override
+    public Collection<TreeElement> children() {
+        return children == null ? new ArrayList<>() : new ArrayList<>(children.values());
+    }
+
+    @Override
+    public String toString() {
+        if (isLeaf())
+            return classValue;
+        else
+            return "-" + splitAttribute;
     }
 }

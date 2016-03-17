@@ -23,7 +23,10 @@ public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
                     Map<String, List<Tuple>> partitions = partitionOnAttribute(tuples, i);
                     return new Triplet<>(i, informationGain(entropy, tuples, partitions.values(), classAttr), partitions);
                 })
-                .max(Comparator.comparingDouble(Triplet::getB))
+                .max(Comparator.comparingDouble((java.util.function.ToDoubleFunction<Triplet<Integer, Double, Map<String, List<Tuple>>>>) (integerDoubleMapTriplet) -> {
+                    Double b = integerDoubleMapTriplet.getB();
+                    return b;
+                }))
                 .get();
         Map<String, List<Tuple>> partitions = triplet.getC();
         return new Pair<>(triplet.getA(), partitions);
