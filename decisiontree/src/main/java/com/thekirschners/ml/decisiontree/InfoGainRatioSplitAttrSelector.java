@@ -15,9 +15,9 @@ public class InfoGainRatioSplitAttrSelector extends InfoGainSplitAttrSelector {
     public static final double LOG2_2 = Math.log(2.0d);
 
     @Override
-    public Pair<Integer, Map<String, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+    public Pair<Integer, Map<Object, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
         final double entropy = entropy(tuples, classAttr);
-        Triplet<Integer, Map<String, List<Tuple>>, Double> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
+        Triplet<Integer, Map<Object, List<Tuple>>, Double> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
                 .map(i -> new Pair<>(i, partitionOnAttribute(tuples, i)))
                 .map(p -> new Triplet<>(p, gainRatio(tuples, classAttr, entropy, p.getB().values())))
                 .max(Comparator.comparingDouble(Triplet::getC))

@@ -15,20 +15,20 @@ public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
     public static final double LOG2_2 = Math.log(2.0d);
 
     @Override
-    public Pair<Integer, Map<String, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
+    public Pair<Integer, Map<Object, List<Tuple>>> selectSplitAttribute(final Collection<Tuple> tuples, final Integer[] splitAttributeCandidates, final int classAttr) {
         final double entropy = entropy(tuples, classAttr);
 
-        Triplet<Integer, Double, Map<String, List<Tuple>>> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
+        Triplet<Integer, Double, Map<Object, List<Tuple>>> triplet = Arrays.asList(splitAttributeCandidates).parallelStream()
                 .map(i -> {
-                    Map<String, List<Tuple>> partitions = partitionOnAttribute(tuples, i);
+                    Map<Object, List<Tuple>> partitions = partitionOnAttribute(tuples, i);
                     return new Triplet<>(i, informationGain(entropy, tuples, partitions.values(), classAttr), partitions);
                 })
-                .max(Comparator.comparingDouble((java.util.function.ToDoubleFunction<Triplet<Integer, Double, Map<String, List<Tuple>>>>) (integerDoubleMapTriplet) -> {
+                .max(Comparator.comparingDouble((java.util.function.ToDoubleFunction<Triplet<Integer, Double, Map<Object, List<Tuple>>>>) (integerDoubleMapTriplet) -> {
                     Double b = integerDoubleMapTriplet.getB();
                     return b;
                 }))
                 .get();
-        Map<String, List<Tuple>> partitions = triplet.getC();
+        Map<Object, List<Tuple>> partitions = triplet.getC();
         return new Pair<>(triplet.getA(), partitions);
     }
 
@@ -49,7 +49,7 @@ public class InfoGainSplitAttrSelector implements SplitAttributeSelector {
         return partitions.parallelStream().collect(Collectors.summingDouble(p -> entropy(p, classAttr) * ((double) p.size()) / initialSize));
     }
 
-    Map<String,List<Tuple>> partitionOnAttribute(Collection<Tuple> tuples, int splitAtribute) {
+    Map<Object,List<Tuple>> partitionOnAttribute(Collection<Tuple> tuples, int splitAtribute) {
         return tuples.parallelStream().collect(Collectors.groupingBy(t -> t.attribute(splitAtribute)));
     }
 

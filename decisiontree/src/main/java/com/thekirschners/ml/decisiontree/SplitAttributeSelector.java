@@ -11,5 +11,5 @@ import java.util.Map;
  * Created by emilkirschner on 02/03/16.
  */
 public interface SplitAttributeSelector {
-    Pair<Integer, Map<String, List<Tuple>>> selectSplitAttribute(Collection<Tuple> tuples, Integer[] splitAttributeCandidates, int classAttr);
+    Pair<Integer, Map<Object, List<Tuple>>> selectSplitAttribute(Collection<Tuple> tuples, Integer[] splitAttributeCandidates, int classAttr);
 }
