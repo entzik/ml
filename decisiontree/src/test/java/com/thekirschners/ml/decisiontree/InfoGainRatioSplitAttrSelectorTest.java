@@ -20,7 +20,7 @@ public class InfoGainRatioSplitAttrSelectorTest {
         List<Tuple> dataSet = TestDataSet.getDataSet();
         InfoGainRatioSplitAttrSelector selector = new InfoGainRatioSplitAttrSelector();
         Collection<List<Tuple>> partitions = selector.partitionOnAttribute(dataSet, 2).values();
-        double splitInfoA = selector.splitInfo(dataSet, partitions, 5);
+        double splitInfoA = selector.splitInfo(dataSet.size(), partitions);
         TestCase.assertEquals("splitInfo", 1.557, splitInfoA, 0.001);
     }
 
@@ -29,7 +29,7 @@ public class InfoGainRatioSplitAttrSelectorTest {
         List<Tuple> dataSet = TestDataSet.getDataSet();
         InfoGainRatioSplitAttrSelector selector = new InfoGainRatioSplitAttrSelector();
         double entropy = selector.entropy(dataSet, 5);
-        double gainRatio = selector.gainRatio(dataSet, 5, entropy, selector.partitionOnAttribute(dataSet, 2).values());
+        double gainRatio = selector.gainRatio(dataSet.size(), 5, entropy, selector.partitionOnAttribute(dataSet, 2).values());
         TestCase.assertEquals("gain ratio", 0.019, gainRatio, 0.001);
     }
 

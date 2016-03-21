@@ -27,7 +27,7 @@ public class InfoGainSplitAttrSelectorTest {
         List<Tuple> dataSet = TestDataSet.getDataSet();
         InfoGainSplitAttrSelector informationGainSplitAttributeSelector = new InfoGainSplitAttrSelector();
         Collection<List<Tuple>> partitions = informationGainSplitAttributeSelector.partitionOnAttribute(dataSet, 1).values();
-        double splitEntropy = informationGainSplitAttributeSelector.splitEntropy(dataSet, partitions, 5);
+        double splitEntropy = informationGainSplitAttributeSelector.splitEntropy(dataSet.size(), partitions, 5);
         TestCase.assertEquals("entropy value", 0.694d, splitEntropy, 0.001);
     }
 
@@ -37,7 +37,7 @@ public class InfoGainSplitAttrSelectorTest {
         InfoGainSplitAttrSelector informationGainSplitAttributeSelector = new InfoGainSplitAttrSelector();
         double entropy = informationGainSplitAttributeSelector.entropy(dataSet, 5);
         Collection<List<Tuple>> partitions = informationGainSplitAttributeSelector.partitionOnAttribute(dataSet, 1).values();
-        double informationGain = informationGainSplitAttributeSelector.informationGain(entropy, dataSet, partitions, 5);
+        double informationGain = informationGainSplitAttributeSelector.informationGain(entropy, dataSet.size(), partitions, 5);
         TestCase.assertEquals("information gain", 0.246d, informationGain, 0.001);
     }
 
