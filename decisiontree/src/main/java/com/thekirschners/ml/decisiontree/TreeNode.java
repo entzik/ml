@@ -18,15 +18,30 @@ public interface TreeNode {
      */
     boolean isLeaf();
 
+    /**
+     * gets the child towards which the specified tuple will be routed during the decision process - only supported for non-leaf nodes
+     * @param t the tuple to be routed
+     * @return the next node in the decision path
+     */
     default TreeNode getChild(Tuple t) {
         throw new IllegalStateException(this.getClass().getName() + " instances do not have children");
     }
 
+    /**
+     * returns this node's classification label - only supported for leaf nodes
+     * @return the classification object
+     */
     default Object getClassification() {
         throw new IllegalStateException(this.getClass().getName() + " instances do not store the class, you must get to a leaf first");
     }
 
+    /**
+     * DSL namespace interface
+     */
     interface Tools {
+        /**
+         * iterative algorithm used to predict the class label of a tuple
+         */
         class Oracle {
             public static Object predict(TreeNode root, Tuple t) {
                 TreeNode crt = root;
@@ -36,6 +51,9 @@ public interface TreeNode {
             }
         }
 
+        /**
+         * implements an iterative algorithm to build a decision tree using information gain or information gain ratio attribute selection criteria
+         */
         class Builder {
             final SplitAttributeSelector selector;
             final NodeBuilder nodeBuilder;
