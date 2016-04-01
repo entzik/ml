@@ -3,6 +3,8 @@
 Easy to use API for building decision tree using information gain and and information gain ratio based attribute selection
 
 ```java
+List<Tuple> dataSet = ...
+
 Integer[] attributes = {1, 2, 3, 4};
 int classAttribute = 5;
 TreeNode root = TreeNode.Tools.Builder
